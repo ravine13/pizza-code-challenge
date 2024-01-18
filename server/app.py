@@ -94,7 +94,7 @@ class RestaurantById(Resource):
             restaurant_dict["pizzas"] = pizza_list
 
             return restaurant_dict    
-           
+            
     def delete(self, id):
         restaurant = Restaurant.query.get(id)
 
@@ -103,28 +103,43 @@ class RestaurantById(Resource):
             response.status_code = 404
             return response
 
+        RestaurantPizza.query.filter_by(restaurant_id=id).delete()
+
         db.session.delete(restaurant)
         db.session.commit()
 
         return {"message": "Restaurant deleted successfully"}, 200
 
- 
-        
+
         
 api.add_resource(RestaurantById, '/restaurants/<int:id>')
 
-class RestaurantPizza(Resource):
+class Restaurant_Pizza(Resource):
     def post(self):
         data = post_args.parse_args()
+
+        # Validate input data
+        if not (1 <= data["price"] <= 30):
+            response_data = {"errors": ["Price must be between 1 and 30"]}
+            return make_response(jsonify(response_data), 400)
+
+        pizza = Pizza.query.get(data["pizza_id"])
+        restaurant = Restaurant.query.get(data["restaurant_id"])
+
+        if not (pizza and restaurant):
+            response_data = {"errors": ["Invalid Pizza or Restaurant ID"]}
+            return make_response(jsonify(response_data), 400)
+
         new_restaurant_pizza = RestaurantPizza(
-            price = data["price"],
-            restaurant_id = data["restaurant_id"],
-            pizza_id = data["pizza_id"]
+            price=data["price"],
+            restaurant_id=data["restaurant_id"],
+            pizza_id=data["pizza_id"]
         )
+
+      
         db.session.add(new_restaurant_pizza)
         db.session.commit()
 
-        pizza = Pizza.query.get(data["pizza_id"])
         pizza_data = pizza_schema.dump(pizza)
 
         return make_response(
@@ -133,7 +148,7 @@ class RestaurantPizza(Resource):
         )
 
 
-api.add_resource(RestaurantPizza, '/new_restaurants')
+api.add_resource(Restaurant_Pizza, '/new_restaurants')
 
 
 if __name__ == '__main__':
