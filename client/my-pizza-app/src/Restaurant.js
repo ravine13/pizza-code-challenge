@@ -6,9 +6,8 @@ function Restaurant({ id, name }) {
   const [details, setDetails] = useState('');
   const [showDetails, setShowDetails] = useState(true);
 
-
   useEffect(() => {
-    fetch(`${apiUrl}`)
+    fetch(`${apiUrl}/${id}`)
       .then(response => response.json())
       .then(data => {
         console.log(data);
@@ -28,4 +27,31 @@ function Restaurant({ id, name }) {
   );
 }
 
-export default Restaurant;
+function RestaurantDropdown({ restaurants }) {
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+
+  const handleRestaurantChange = (event) => {
+    const selectedId = event.target.value;
+    setSelectedRestaurant(selectedId);
+  };
+
+  return (
+    <div>
+      <label htmlFor="restaurantDropdown">Select a Restaurant: </label>
+      <select id="restaurantDropdown" onChange={handleRestaurantChange}>
+        <option value="">Select a restaurant</option>
+        {restaurants.map(restaurant => (
+          <option key={restaurant.id} value={restaurant.id}>
+            {restaurant.name}
+          </option>
+        ))}
+      </select>
+
+      {selectedRestaurant && (
+        <Restaurant id={selectedRestaurant} name={selectedRestaurant.name} />
+      )}
+    </div>
+  );
+}
+
+export default RestaurantDropdown;
