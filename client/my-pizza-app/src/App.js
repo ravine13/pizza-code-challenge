@@ -1,32 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import PizzasList from './PizzasList';
+import Restaurant from './Restaurant';
+import Home from './Home';
 
 function App() {
-  const [pizzas, setPizzas] = useState([]);
-
-  useEffect(() => {
-    fetch('http://127.0.0.1:5555/pizzas')
-      .then(response => response.json())
-      .then(data => setPizzas(data))
-      .catch(error => console.error('Error fetching pizzas:', error));
-  }, []);
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Welcome to Sunset Pizza Palace
-        </p>
-        <h2>All Pizzas</h2>
-        <ul>
-          {pizzas.map(pizza => (
-            <li key={pizza.id}>
-              <strong>{pizza.name}</strong>: {pizza.ingredients}
-            </li>
-          ))}
-        </ul>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <header className="App-header">
+          <p>Welcome to Sunset Pizza Palace</p>
+
+          <nav>
+            <ul>
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+              <li>
+                <Link to="/restaurants">Restaurants</Link>
+              </li>
+              <li>
+                <Link to="/pizzas">Pizzas</Link>
+              </li>
+            </ul>
+          </nav>
+
+          <Routes>
+            <Route path="/restaurants" element={<RestaurantList />} />
+            <Route path="/pizzas" element={<PizzasList />} />
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </header>
+      </div>
+    </Router>
   );
+}
+
+function RestaurantList() {
+  return <h2>Restaurant List</h2>;
 }
 
 export default App;
