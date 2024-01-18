@@ -32,36 +32,53 @@ restaurant_names = [
 
 fake = Faker()
 
-def pizzas():
-    Restaurant.query.delete()
-    Pizza.query.delete()
-    RestaurantPizza.query.delete()
-    
-    restaurants = []    
-    for i in range(10):
-        restaurant_details = Restaurant(name=rc(restaurant_names), address=fake.address())
-        restaurants.append(restaurant_details)
-    db.session.add_all(restaurants)
-    db.session.commit()
-        
-    pizzas= []
+
+def seed_data():
+    pizzas = []
     for pizza_properties in pizza_data:
-        pizza_details = Pizza(name=(pizza_properties["name"]), ingredients=pizza_properties["ingredients"])
+        pizza_details = Pizza.query.filter_by(id=pizza_properties["id"]).first()
+        if not pizza_details:
+            pizza_details = Pizza(
+                id=pizza_properties["id"],
+                name=pizza_properties["name"],
+                ingredients=pizza_properties["ingredients"]
+            )
+            db.session.add(pizza_details)
+            db.session.commit()
+
         pizzas.append(pizza_details)
-    db.session.add_all(pizzas)
-    db.session.commit()
-        
+
+    restaurants = []
+    for i in range(10):
+        restaurant_details = Restaurant.query.filter_by(id=i + 1).first()
+        if not restaurant_details:
+            restaurant_details = Restaurant(
+                id=i + 1,
+                name=rc(restaurant_names),
+                address=fake.address()
+            )
+            db.session.add(restaurant_details)
+            db.session.commit()
+
+        restaurants.append(restaurant_details)
+
     restaurant_pizzas = []
     for i in range(10):
-        restaurant_pizza = RestaurantPizza(
-            price=randint(5, 30),
-            restaurant_id =rc(restaurants).id,
-            pizza_id=rc(pizzas).id
+        existing_record = RestaurantPizza.query.filter_by(id=i + 1).first()
+        if not existing_record:
+            restaurant_pizza = RestaurantPizza(
+                id=i + 1,
+                price=randint(5, 30),
+                restaurant_id=rc(restaurants).id,
+                pizza_id=rc(pizzas).id
             )
-        restaurant_pizzas.append(restaurant_pizza)
-    db.session.add_all(restaurant_pizzas)
-    db.session.commit()
+            db.session.add(restaurant_pizza)
+            db.session.commit()
+
+        restaurant_pizzas.append(existing_record)
+
+    print("Seed data successfully updated.")
 
 if __name__ == '__main__':
     with app.app_context():
-        pizzas()
+        seed_data()
